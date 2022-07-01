@@ -1,16 +1,17 @@
 {
-    "name": "better-mua-ui",
-    "version": "1.0.0",
-    "manifest_version": 2,
-    "description": "show secure indicator",
-    "content_scripts": [
-      {
-        "matches": [
-          "https://mail.google.com/mail/u/0/*"
-        ],
-        "js": [
-          "js/main.js"
-        ]
-      }
-    ]
-  }
+  "name": "better-mua-ui",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "description": "show secure indicator",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mail.google.com/mail/u/0/*"
+      ],
+      "js": [
+        "js/main.js"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}

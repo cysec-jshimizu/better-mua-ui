@@ -13,7 +13,8 @@ module.exports = {
     module: {
         rules: [
             {
-                use: 'ts-loader'
+                use: 'ts-loader',
+                exclude: /node_modules/
             }
         ]
     },
