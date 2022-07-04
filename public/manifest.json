@@ -6,7 +6,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://mail.google.com/mail/u/0/*"
+        "https://mail.google.com/mail/u/0/*",
+        "https://outlook.office365.com/*"
       ],
       "js": [
         "js/main.js"
