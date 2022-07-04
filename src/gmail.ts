@@ -1,4 +1,4 @@
-import { mailParser } from "./email";
+import { mailParser, parseSecStat } from "./email";
 
 function getGmId(): string {
   // returns gmID which exsits in script tag
@@ -20,7 +20,7 @@ function getGmId(): string {
   return gmId;
 }
 
-function getThradId(): string {
+function getThreadId(): string {
   // in mail, get thread id
   let h2: NodeListOf<HTMLInputElement> = document.querySelectorAll<HTMLInputElement>("h2[data-thread-perm-id]");
   let threadid: string = "";
@@ -31,6 +31,7 @@ function getThradId(): string {
 }
 
 function getThreadList(): EmailThread[] {
+  // in box, get email list
   let threadList: EmailThread[] = [];
   if (document.querySelectorAll("table") !== null) {
     let tbody: NodeListOf<HTMLInputElement> = document.querySelectorAll<HTMLInputElement>("tbody");
@@ -103,19 +104,21 @@ function inSrc() {
 }
 
 function inMail() {
-  let tId = getThradId();
+  let tId = getThreadId();
   let gmId: string = getGmId();
   let u = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${tId.substring(7)}`;
 
   getEmail(u)
     .then((raw: string) => {
-      console.log(raw);
-
       let parsedHeader: EmailHeader = mailParser(raw);
       return parsedHeader;
     })
     .then((parsed: EmailHeader) => {
-      // !!暗号化の有無
+      if (parsed["Authentication-Results"] && parsed["Received"]) {
+        let temp = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
+        console.log(temp);
+      }
+      // !!encrypt, authの有無をDOMに反映
     });
 }
 
@@ -149,7 +152,7 @@ function inbox() {
           return parsedHeader;
         })
         .then((parsed: EmailHeader) => {
-          // !!暗号化の有無，検証結果を表示
+          // !!encrypt, authの有無をDOMに反映
         })
         .catch((e: Error) => console.error(e));
     }

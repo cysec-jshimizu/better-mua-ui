@@ -21,4 +21,44 @@ function mailParser(email: string): EmailHeader {
   return headerList;
 }
 
-export { mailParser };
+function parseSecStat(auth: string, received: Array<string>): SecStatus {
+  let stat: SecStatus = {
+    auth: {},
+    encrypt: {
+      bool: false,
+      description: ""
+    }
+  };
+
+  // parse authentication results header
+  const reAuth: RegExp = new RegExp(/(\w+)=(\w+) ([\w !-/:-@¥[-`{-~]+)/, "m");
+  let result: AuthResults = {};
+  for (let i of auth.split(";")) {
+    let match_results: Array<string> | null = i.match(reAuth);
+    if (match_results) {
+      result[match_results[1]] = {
+        result: "",
+        description: ""
+      };
+
+      result[match_results[1]].result = match_results[2];
+      result[match_results[1]].description = match_results[3];
+    }
+  }
+  stat.auth = result;
+
+  // parse received header
+  const reReceived: RegExp = new RegExp(/\((version=\w+ cipher=[\w-]* bits=[\w/]+)\)/, "m");
+  for (let i of received) {
+    let match_results: Array<string> | null = i.match(reReceived);
+    if (match_results) {
+      stat.encrypt.bool = true;
+      stat.encrypt.description = match_results[1];
+      break;
+    }
+  }
+
+  return stat;
+}
+
+export { mailParser, parseSecStat };
