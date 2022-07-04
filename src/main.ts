@@ -1,5 +1,4 @@
-import { showIbeResult } from "./email";
-import { inbox, inMail } from "./gmail";
+import { inbox, inMail, inSrc } from "./gmail";
 
 function main() {
   let url: URL = new URL(document.URL);
@@ -21,9 +20,6 @@ function main() {
       }
     });
 
-    console.log(params.get("compose"));
-
-
     if (url.hash === "#inbox") {
       // メール一覧
       inbox();
@@ -35,8 +31,10 @@ function main() {
       inMail();
     } else if (params.has("permmsgid") && params.has("ik") && params.has("view")) {
       // メールのソースを表示
-      showIbeResult();
+      inSrc();
     }
+  } else if (url.origin + url.pathname === "https://outlook.office365.com/mail/") {
+    console.log("at outlook");
   }
 }
 

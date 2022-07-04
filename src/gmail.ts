@@ -13,7 +13,7 @@ function getGmId(): string {
         if (Array.isArray(obj[a])) {
           gmId = obj[a][2];
         }
-      })
+      });
     }
   });
 
@@ -72,22 +72,52 @@ function getEmail(url: string): Promise<string> {
     });
 }
 
-function inMail() {
-  let tid = getThradId();
-  let gmId: string = getGmId();
-  let u = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${tid.substring(7)}`;
+// add row in email source page
+function insertTable(table: Element, tag: string, value: string) {
+  let tr: HTMLTableRowElement = document.createElement("tr");
+  table.appendChild(tr);
 
-  getEmail(u).then((raw: string) => {
-    let parsedHeader: EmailHeader = mailParser(raw);
-    return parsedHeader;
-  }).then((parsed: EmailHeader) => {
-    if (parsed["IBE-Verify"]) {
-      console.log(parsed["IBE-Verify"][0]);
-    } else {
-      console.log("no sign");
-    }
-  })
-};
+  let th: HTMLTableCellElement = document.createElement("th");
+  th.innerHTML = `${tag}:`;
+  tr.appendChild(th);
+
+  let td: HTMLTableCellElement = document.createElement("td");
+  td.innerHTML = value;
+  tr.appendChild(td);
+}
+
+function inSrc() {
+  let rawEmail: string = document.getElementById("raw_message_text")!.innerHTML;
+  let parsed: EmailHeader = mailParser(rawEmail);
+
+  const authResult: string = "Authentication-Results";
+  const table = document.querySelector<HTMLInputElement>(".top-area table tbody");
+  if (!table) {
+    console.warn("no table");
+    return;
+  }
+
+  if (parsed[authResult]) {
+    insertTable(table, authResult, parsed[authResult][0]);
+  }
+}
+
+function inMail() {
+  let tId = getThradId();
+  let gmId: string = getGmId();
+  let u = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${tId.substring(7)}`;
+
+  getEmail(u)
+    .then((raw: string) => {
+      console.log(raw);
+
+      let parsedHeader: EmailHeader = mailParser(raw);
+      return parsedHeader;
+    })
+    .then((parsed: EmailHeader) => {
+      // !!暗号化の有無
+    });
+}
 
 function inbox() {
   // show ibe result at #inbox
@@ -95,7 +125,9 @@ function inbox() {
     let threadList: EmailThread[] = getThreadList();
     let gmId: string = getGmId();
     for (let thread of threadList) {
-      let mailUrl: string = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${thread.id.substring(8)}`;
+      let mailUrl: string = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${thread.id.substring(
+        8
+      )}`;
       getEmail(mailUrl)
         .then((raw: string): EmailHeader => {
           let parsedHeader: EmailHeader;
@@ -117,21 +149,7 @@ function inbox() {
           return parsedHeader;
         })
         .then((parsed: EmailHeader) => {
-          if (parsed["IBE-Verify"]) {
-            if (parsed["IBE-Verify"].length === 1 && parsed["IBE-Verify"][0] === "ok") {
-              thread.ele.style.backgroundColor = "green";
-            } else {
-              console.warn("failed to verify");
-              thread.ele.style.backgroundColor = "red";
-            }
-          }
-          if (parsed["Ibemail-Decrypted"]) {
-            if (parsed["Ibemail-Decrypted"][0] === "true") {
-              // console.log("dec ok");
-            } else {
-              // console.log("dec failed");
-            }
-          }
+          // !!暗号化の有無，検証結果を表示
         })
         .catch((e: Error) => console.error(e));
     }
@@ -140,4 +158,4 @@ function inbox() {
   setTimeout(isLoaded, 2000);
 }
 
-export { inbox, inMail };
+export { inbox, inMail, inSrc };

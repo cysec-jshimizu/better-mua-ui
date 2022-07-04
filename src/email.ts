@@ -21,34 +21,4 @@ function mailParser(email: string): EmailHeader {
   return headerList;
 }
 
-// add row in email source page
-function insertTable(table: Element, tag: string, value: string) {
-  let tr: HTMLTableRowElement = document.createElement("tr");
-  table.appendChild(tr);
-
-  let th: HTMLTableCellElement = document.createElement("th");
-  th.innerHTML = `${tag}:`;
-  tr.appendChild(th);
-
-  let td: HTMLTableCellElement = document.createElement("td");
-  td.innerHTML = value;
-  tr.appendChild(td);
-}
-
-function showIbeResult() {
-  let rawEmail: string = document.getElementById("raw_message_text")!.innerHTML;
-  let parsed: EmailHeader = mailParser(rawEmail);
-
-  const authResult: string = "Authentication-Results";
-  const table = document.querySelector<HTMLInputElement>(".top-area table tbody");
-  if (!table) {
-    console.warn("no table");
-    return;
-  }
-
-  if (parsed[authResult]) {
-    insertTable(table, authResult, parsed[authResult][0]);
-  }
-}
-
-export { mailParser, showIbeResult };
+export { mailParser };
