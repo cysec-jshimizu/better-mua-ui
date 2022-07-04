@@ -1,4 +1,8 @@
 {
+    "endOfLine": "lf",
     "printWidth": 120,
-    "endOfLine": "lf"
+    "singleQuote": false,
+    "tabWidth": 2,
+    "trailingComma": "none",
+    "useTabs": false
 }
