@@ -91,15 +91,19 @@ function inSrc() {
   let rawEmail: string = document.getElementById("raw_message_text")!.innerHTML;
   let parsed: EmailHeader = mailParser(rawEmail);
 
-  const authResult: string = "Authentication-Results";
   const table = document.querySelector<HTMLInputElement>(".top-area table tbody");
   if (!table) {
     console.warn("no table");
     return;
   }
 
-  if (parsed[authResult]) {
-    insertTable(table, authResult, parsed[authResult][0]);
+  if (parsed["Received"]) {
+    let result: SecStatus = parseSecStat("", parsed["Received"]);
+    let enc = String(result.encrypt.bool);
+    if (result.encrypt.description) {
+      enc += ` (${result.encrypt.description})`;
+    }
+    insertTable(table, "暗号化", enc);
   }
 }
 
