@@ -108,18 +108,36 @@ function inSrc() {
   }
 }
 
-async function inMail() {
-  let tId = await getThreadId();
-  let gmId: string = getGmId();
-  let u = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${tId.substring(7)}`;
+function insertImg(dist: Element, stat: SecStatus) {
+  let encrypt_img_ele = document.createElement("img");
 
+  if (stat.encrypt.bool) {
+    encrypt_img_ele.src = chrome.extension.getURL("img/lock.png");
+  } else {
+    encrypt_img_ele.src = chrome.extension.getURL("img/notlock.png");
+  }
+  encrypt_img_ele.height = 20;
+  encrypt_img_ele.width = 20;
+  dist.appendChild(encrypt_img_ele);
+  // !!authの結果
+}
+
+async function inMail() {
+  let tId: string = await getThreadId();
+  let gmId: string = getGmId();
+  let u: string = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${tId.substring(7)}`;
+  let ele: Element | null = document.querySelector("div.gK");
+  if (!ele) {
+    return;
+  }
+
+  // !!encrypt, authの有無をDOMに反映
   let raw: string = await getEmail(u);
   let parsed: EmailHeader = mailParser(raw);
   if (parsed["Authentication-Results"] && parsed["Received"]) {
-    let temp = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
-    console.log(temp);
+    let emailStat: SecStatus = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
+    insertImg(ele, emailStat);
   }
-  // !!encrypt, authの有無をDOMに反映
 }
 
 async function inbox() {
@@ -148,8 +166,8 @@ async function inbox() {
         .then((parsed: EmailHeader) => {
           // !!encrypt, authの有無をDOMに反映
           if (parsed["Authentication-Results"] && parsed["Received"]) {
-            let mailStat: SecStatus = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
-            // console.log(mailStat);
+            let emailStat: SecStatus = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
+            insertImg(thread.ele, emailStat);
           }
         });
       await sleep(0.05);
