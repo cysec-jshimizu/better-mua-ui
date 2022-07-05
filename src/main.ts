@@ -9,8 +9,8 @@ function main() {
       let u = new URL(event.newURL);
       if (u.hash === "#inbox") {
         // まだ色をつけていないなら
-        // inbox();
         // なにかフラグを立てておく
+        inbox();
       } else if (u.hash.match(/#inbox\/?\?compose=/)) {
         // 新規メール
         console.log("writing new email");
