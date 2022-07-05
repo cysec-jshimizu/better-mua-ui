@@ -1,4 +1,5 @@
 import { mailParser, parseSecStat } from "./email";
+import { sleep } from "./util";
 
 function getGmId(): string {
   // returns gmID which exsits in script tag
@@ -20,14 +21,21 @@ function getGmId(): string {
   return gmId;
 }
 
-function getThreadId(): string {
+async function getThreadId(): Promise<string> {
   // in mail, get thread id
   let h2: NodeListOf<HTMLInputElement> = document.querySelectorAll<HTMLInputElement>("h2[data-thread-perm-id]");
   let threadid: string = "";
-  h2.forEach((ele: HTMLInputElement) => {
-    threadid = ele.getAttribute("data-thread-perm-id")!;
-  });
-  return threadid;
+
+  if (h2.length) {
+    h2.forEach((ele: HTMLInputElement) => {
+      threadid = ele.getAttribute("data-thread-perm-id")!;
+    });
+    return threadid;
+  } else {
+    // wait for DOM
+    await sleep(0.5);
+    return await getThreadId();
+  }
 }
 
 function getThreadList(): EmailThread[] {
@@ -51,26 +59,19 @@ function getThreadList(): EmailThread[] {
   return threadList;
 }
 
-function getEmail(url: string): Promise<string> {
-  return fetch(url)
-    .then((res: Response) => {
-      if (res.status !== 200) {
-        console.warn(res.status);
-      }
-      return res.text();
-    })
-    .then((text: string) => {
-      return new DOMParser().parseFromString(text, "text/html");
-    })
-    .then((html: Document) => {
-      let rawEmail: string = "";
-      try {
-        rawEmail = html.getElementById("raw_message_text")!.innerHTML;
-      } catch (e) {
-        // console.error(e);
-      }
-      return rawEmail;
-    });
+async function getEmail(url: string): Promise<string> {
+  let res: Response = await fetch(url);
+  if (res.status !== 200) {
+    console.warn(res.status);
+  }
+  let html: Document = new DOMParser().parseFromString(await res.text(), "text/html");
+  let rawEmail: string = "";
+  try {
+    rawEmail = html.getElementById("raw_message_text")!.innerHTML;
+  } catch (e) {
+    // console.error(e);
+  }
+  return rawEmail;
 }
 
 // add row in email source page
@@ -107,28 +108,22 @@ function inSrc() {
   }
 }
 
-function inMail() {
-  let tId = getThreadId();
+async function inMail() {
+  let tId = await getThreadId();
   let gmId: string = getGmId();
   let u = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${tId.substring(7)}`;
 
-  getEmail(u)
-    .then((raw: string) => {
-      let parsedHeader: EmailHeader = mailParser(raw);
-      return parsedHeader;
-    })
-    .then((parsed: EmailHeader) => {
-      if (parsed["Authentication-Results"] && parsed["Received"]) {
-        let temp = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
-        console.log(temp);
-      }
-      // !!encrypt, authの有無をDOMに反映
-    });
+  let raw: string = await getEmail(u);
+  let parsed: EmailHeader = mailParser(raw);
+  if (parsed["Authentication-Results"] && parsed["Received"]) {
+    let temp = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
+    console.log(temp);
+  }
+  // !!encrypt, authの有無をDOMに反映
 }
 
-function inbox() {
-  // show ibe result at #inbox
-  function isLoaded() {
+async function inbox() {
+  async function isLoaded() {
     let threadList: EmailThread[] = getThreadList();
     let gmId: string = getGmId();
     for (let thread of threadList) {
@@ -136,29 +131,28 @@ function inbox() {
         8
       )}`;
       getEmail(mailUrl)
-        .then((raw: string): EmailHeader => {
-          let parsedHeader: EmailHeader;
+        .then(async function (raw: string): Promise<EmailHeader> {
           if (raw === "") {
-            // fetch again after 3 seconds
-            setTimeout(() => {
-              getEmail(mailUrl).then((raw) => {
-                if (raw === "") {
-                  // console.log(thread.id);
-                  thread.ele.style.backgroundColor = "yellow";
-                  throw new Error(`failed to get source of email(${mailUrl})`);
-                } else {
-                  parsedHeader = mailParser(raw);
-                }
-              });
-            }, 3000);
+            await sleep(2);
+            let raw2: string = await getEmail(mailUrl);
+            if (raw2 === "") {
+              thread.ele.style.backgroundColor = "yellow";
+              throw new Error(`failed to get source of email(${mailUrl})`);
+            } else {
+              return mailParser(raw2);
+            }
+          } else {
+            return mailParser(raw);
           }
-          parsedHeader = mailParser(raw);
-          return parsedHeader;
         })
         .then((parsed: EmailHeader) => {
           // !!encrypt, authの有無をDOMに反映
-        })
-        .catch((e: Error) => console.error(e));
+          if (parsed["Authentication-Results"] && parsed["Received"]) {
+            let mailStat: SecStatus = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
+            // console.log(mailStat);
+          }
+        });
+      await sleep(0.05);
     }
   }
   // not good implement
