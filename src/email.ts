@@ -48,7 +48,10 @@ function parseSecStat(auth: string, received: Array<string>): SecStatus {
   stat.auth = result;
 
   // parse received header
-  const reReceived: RegExp = new RegExp(/\((version=\w+ cipher=[\w-]* bits=[\w/]+)\)/, "m");
+  const reReceived: RegExp = new RegExp(
+    /\(((Google Transport Security)|(version=\w+ cipher=[\w-]* bits=[\w/]+))\)/,
+    "m"
+  );
   for (let i of received) {
     let match_results: Array<string> | null = i.match(reReceived);
     if (match_results) {
