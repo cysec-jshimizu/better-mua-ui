@@ -7,7 +7,7 @@ function main() {
     // URLが変更されたらevent
     addEventListener("hashchange", function (event: HashChangeEvent) {
       let u = new URL(event.newURL);
-      if (u.hash === "#inbox") {
+      if (u.hash.match(/#inbox(\/p2)?$/)) {
         // まだ色をつけていないなら
         // なにかフラグを立てておく
         inbox();
@@ -20,7 +20,7 @@ function main() {
       }
     });
 
-    if (url.hash === "#inbox") {
+    if (url.hash.match(/#inbox(\/p2)?$/)) {
       // メール一覧
       inbox();
     } else if (url.hash.match(/#inbox\/?\?compose=/)) {
