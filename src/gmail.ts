@@ -109,24 +109,24 @@ function inSrc() {
 }
 
 function insertImg(dist: Element, stat: SecStatus) {
-  let encrypt_img_ele = document.createElement("img");
-  encrypt_img_ele.className = "encrypt-result";
+  let encryptImgEle = document.createElement("img");
+  encryptImgEle.className = "encrypt-result";
 
   if (!dist.querySelector(".encrypt-result")) {
     if (stat.encrypt.bool) {
-      encrypt_img_ele.src = chrome.extension.getURL("img/lock.png");
+      encryptImgEle.src = chrome.extension.getURL("img/lock.png");
     } else {
-      encrypt_img_ele.src = chrome.extension.getURL("img/notlock.png");
+      encryptImgEle.src = chrome.extension.getURL("img/notlock.png");
     }
-    encrypt_img_ele.height = 20;
-    encrypt_img_ele.width = 20;
-    dist.appendChild(encrypt_img_ele);
+    encryptImgEle.height = 20;
+    encryptImgEle.width = 20;
+    dist.appendChild(encryptImgEle);
   }
 
   // !!authの結果
-  // let auth_img_ele = document.createElement("img");
-  let auth_img_ele = document.createElement("div");
-  auth_img_ele.className = "auth-result";
+  // let authImgEle = document.createElement("img");
+  let authImgEle = document.createElement("div");
+  authImgEle.className = "auth-result";
 
   if (!dist.querySelector(".auth-result")) {
     let authResult: boolean = Object.keys(stat.auth).length > 1 ? true : false;
@@ -135,13 +135,13 @@ function insertImg(dist: Element, stat: SecStatus) {
       authResult &&= stat.auth[authType].result === "pass";
     }
     if (authResult) {
-      auth_img_ele.style.color = "green";
-      auth_img_ele.innerHTML = "〇";
+      authImgEle.style.color = "green";
+      authImgEle.innerHTML = "〇";
     } else {
-      auth_img_ele.style.color = "red";
-      auth_img_ele.innerHTML = "×";
+      authImgEle.style.color = "red";
+      authImgEle.innerHTML = "×";
     }
-    dist.appendChild(auth_img_ele);
+    dist.appendChild(authImgEle);
   }
 }
 

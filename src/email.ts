@@ -34,15 +34,15 @@ function parseSecStat(auth: string, received: Array<string>): SecStatus {
   const reAuth: RegExp = new RegExp(/(\w+)=(\w+) ([\w !-/:-@¥[-`{-~]+)/, "m");
   let result: AuthResults = {};
   for (let i of auth.split(";")) {
-    let match_results: Array<string> | null = i.match(reAuth);
-    if (match_results) {
-      result[match_results[1]] = {
+    let matchResults: Array<string> | null = i.match(reAuth);
+    if (matchResults) {
+      result[matchResults[1]] = {
         result: "",
         description: ""
       };
 
-      result[match_results[1]].result = match_results[2];
-      result[match_results[1]].description = match_results[3];
+      result[matchResults[1]].result = matchResults[2];
+      result[matchResults[1]].description = matchResults[3];
     }
   }
   stat.auth = result;
@@ -53,10 +53,10 @@ function parseSecStat(auth: string, received: Array<string>): SecStatus {
     "m"
   );
   for (let i of received) {
-    let match_results: Array<string> | null = i.match(reReceived);
-    if (match_results) {
+    let matchResults: Array<string> | null = i.match(reReceived);
+    if (matchResults) {
       stat.encrypt.bool = true;
-      stat.encrypt.description = match_results[1];
+      stat.encrypt.description = matchResults[1];
       break;
     }
   }
