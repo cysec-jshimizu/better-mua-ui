@@ -109,39 +109,50 @@ function inSrc() {
 }
 
 function insertImg(dist: Element, stat: SecStatus) {
-  let encryptImgEle = document.createElement("img");
-  encryptImgEle.className = "encrypt-result";
-
-  if (!dist.querySelector(".encrypt-result")) {
-    if (stat.encrypt.bool) {
-      encryptImgEle.src = chrome.extension.getURL("img/lock.png");
-    } else {
-      encryptImgEle.src = chrome.extension.getURL("img/notlock.png");
-    }
-    encryptImgEle.height = 20;
-    encryptImgEle.width = 20;
-    dist.appendChild(encryptImgEle);
-  }
-
   // !!authの結果
   // let authImgEle = document.createElement("img");
   let authImgEle = document.createElement("div");
   authImgEle.className = "auth-result";
 
   if (!dist.querySelector(".auth-result")) {
-    let authResult: boolean = Object.keys(stat.auth).length > 1 ? true : false;
+    let authResult: boolean = Object.keys(stat.auth).length ? true : false;
 
     for (let authType in stat.auth) {
       authResult &&= stat.auth[authType].result === "pass";
     }
+
     if (authResult) {
       authImgEle.style.color = "green";
-      authImgEle.innerHTML = "〇";
+      authImgEle.innerHTML = "✓";
     } else {
       authImgEle.style.color = "red";
       authImgEle.innerHTML = "×";
     }
-    dist.appendChild(authImgEle);
+    authImgEle.addEventListener("mouseenter", () => {
+      console.log(stat.auth);
+    });
+    dist.prepend(authImgEle);
+  }
+
+  // !!暗号化の結果
+  let encryptImgEle = document.createElement("img");
+  let lockImg: string;
+  encryptImgEle.className = "encrypt-result";
+
+  if (!dist.querySelector(".encrypt-result")) {
+    if (stat.encrypt.bool) {
+      lockImg = "img/lock.png";
+    } else {
+      lockImg = "img/notlock.png";
+    }
+    // encryptImgEle.src = browser.extension.getURL(lockImg);
+    encryptImgEle.src = chrome.extension.getURL(lockImg);
+    encryptImgEle.height = 20;
+    encryptImgEle.width = 20;
+    encryptImgEle.addEventListener("mouseenter", () => {
+      console.log(stat.encrypt.description);
+    });
+    dist.prepend(encryptImgEle);
   }
 }
 
@@ -157,45 +168,42 @@ async function inMail() {
   let raw: string = await getEmail(u);
   let parsed: EmailHeader = mailParser(raw);
   if (parsed["Authentication-Results"] && parsed["Received"]) {
-    let emailStat: SecStatus = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
+    let emailStat: SecStatus = parseSecStat(parsed["Authentication-Results"].slice(-1)[0], parsed["Received"]);
     insertImg(ele, emailStat);
   }
 }
 
 async function inbox() {
-  async function isLoaded() {
-    let threadList: EmailThread[] = getThreadList();
-    let gmId: string = getGmId();
-    for (let thread of threadList) {
-      let mailUrl: string = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${thread.id.substring(
-        8
-      )}`;
-      getEmail(mailUrl)
-        .then(async function (raw: string): Promise<EmailHeader> {
-          if (raw === "") {
-            await sleep(2);
-            let raw2: string = await getEmail(mailUrl);
-            if (raw2 === "") {
-              thread.ele.style.backgroundColor = "yellow";
-              throw new Error(`failed to get source of email(${mailUrl})`);
-            } else {
-              return mailParser(raw2);
-            }
+  await sleep(2);
+  let threadList: EmailThread[] = getThreadList();
+  let gmId: string = getGmId();
+  for (let thread of threadList) {
+    let mailUrl: string = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${thread.id.substring(
+      8
+    )}`;
+    getEmail(mailUrl)
+      .then(async function (raw: string): Promise<EmailHeader> {
+        if (raw === "") {
+          await sleep(2);
+          let raw2: string = await getEmail(mailUrl);
+          if (raw2 === "") {
+            thread.ele.style.backgroundColor = "yellow";
+            throw new Error(`failed to get source of email(${mailUrl})`);
           } else {
-            return mailParser(raw);
+            return mailParser(raw2);
           }
-        })
-        .then((parsed: EmailHeader) => {
-          if (parsed["Authentication-Results"] && parsed["Received"]) {
-            let emailStat: SecStatus = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
-            insertImg(thread.ele, emailStat);
-          }
-        });
-      await sleep(0.05);
-    }
+        } else {
+          return mailParser(raw);
+        }
+      })
+      .then((parsed: EmailHeader) => {
+        if (parsed["Authentication-Results"] && parsed["Received"]) {
+          let emailStat: SecStatus = parseSecStat(parsed["Authentication-Results"].slice(-1)[0], parsed["Received"]);
+          insertImg(thread.ele, emailStat);
+        }
+      });
+    await sleep(0.05);
   }
-  // not good implement
-  setTimeout(isLoaded, 2000);
 }
 
 export { inbox, inMail, inSrc };
