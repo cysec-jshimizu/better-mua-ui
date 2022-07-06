@@ -110,16 +110,39 @@ function inSrc() {
 
 function insertImg(dist: Element, stat: SecStatus) {
   let encrypt_img_ele = document.createElement("img");
+  encrypt_img_ele.className = "encrypt-result";
 
-  if (stat.encrypt.bool) {
-    encrypt_img_ele.src = chrome.extension.getURL("img/lock.png");
-  } else {
-    encrypt_img_ele.src = chrome.extension.getURL("img/notlock.png");
+  if (!dist.querySelector(".encrypt-result")) {
+    if (stat.encrypt.bool) {
+      encrypt_img_ele.src = chrome.extension.getURL("img/lock.png");
+    } else {
+      encrypt_img_ele.src = chrome.extension.getURL("img/notlock.png");
+    }
+    encrypt_img_ele.height = 20;
+    encrypt_img_ele.width = 20;
+    dist.appendChild(encrypt_img_ele);
   }
-  encrypt_img_ele.height = 20;
-  encrypt_img_ele.width = 20;
-  dist.appendChild(encrypt_img_ele);
+
   // !!authの結果
+  // let auth_img_ele = document.createElement("img");
+  let auth_img_ele = document.createElement("div");
+  auth_img_ele.className = "auth-result";
+
+  if (!dist.querySelector(".auth-result")) {
+    let authResult: boolean = Object.keys(stat.auth).length > 1 ? true : false;
+
+    for (let authType in stat.auth) {
+      authResult &&= stat.auth[authType].result === "pass";
+    }
+    if (authResult) {
+      auth_img_ele.style.color = "green";
+      auth_img_ele.innerHTML = "〇";
+    } else {
+      auth_img_ele.style.color = "red";
+      auth_img_ele.innerHTML = "×";
+    }
+    dist.appendChild(auth_img_ele);
+  }
 }
 
 async function inMail() {
@@ -131,7 +154,6 @@ async function inMail() {
     return;
   }
 
-  // !!encrypt, authの有無をDOMに反映
   let raw: string = await getEmail(u);
   let parsed: EmailHeader = mailParser(raw);
   if (parsed["Authentication-Results"] && parsed["Received"]) {
@@ -164,7 +186,6 @@ async function inbox() {
           }
         })
         .then((parsed: EmailHeader) => {
-          // !!encrypt, authの有無をDOMに反映
           if (parsed["Authentication-Results"] && parsed["Received"]) {
             let emailStat: SecStatus = parseSecStat(parsed["Authentication-Results"][0], parsed["Received"]);
             insertImg(thread.ele, emailStat);
