@@ -49,14 +49,20 @@ function parseSecStat(auth: string, received: Array<string>): SecStatus {
 
   // parse received header
   const reReceived: RegExp = new RegExp(
-    /\(((Google Transport Security)|(version=\w+ cipher=[\w-]* bits=[\w/]+))\)/,
+    /^from [\[\]\w\.-]+ \([\w\s\.\[\]\-]+\) ?by [\w\.]+ (?:\(\w+\) )?with ([a-zA-Z]+) [\w\s\.\-\&@;]+(\([\w\s\=\-\/]+\))?/,
     "m"
   );
   for (let i of received) {
     let matchResults: Array<string> | null = i.match(reReceived);
     if (matchResults) {
+      if (!matchResults[1].match(/SMTPS/)) {
+        continue;
+      }
       stat.encrypt.bool = true;
       stat.encrypt.description = matchResults[1];
+      if (matchResults[2]) {
+        stat.encrypt.description += matchResults[2];
+      }
       break;
     }
   }
