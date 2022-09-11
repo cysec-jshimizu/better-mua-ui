@@ -1,4 +1,4 @@
-import { inbox, inMail, inSrc } from "./gmail";
+import { inbox, inMail, inSrc, inNewMail } from "./gmail";
 
 function mailGoogleCom(url: URL) {
   let params: URLSearchParams = url.searchParams;
@@ -6,9 +6,9 @@ function mailGoogleCom(url: URL) {
   if (url.hash.match(/#inbox(\/p2)?$/)) {
     // メール一覧
     inbox();
-  } else if (url.hash.match(/#inbox\/?\?compose=/)) {
+  } else if (url.hash.match(/#inbox(?:\/p2)?\?compose=new/)) {
     // 新規メールを書く
-    console.log("writing new mail");
+    inNewMail();
   } else if (url.hash.match(/#inbox\/[\w]+/)) {
     // メールを展開
     inMail();

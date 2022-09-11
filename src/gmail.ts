@@ -4,8 +4,8 @@ import { sleep } from "./util";
 function getGmId(): string {
   // returns gmID which exsits in script tag
   let gmId: string = "";
-  const scripts: NodeListOf<HTMLInputElement> = document.querySelectorAll<HTMLInputElement>("script[nonce]");
-  scripts.forEach((ele: HTMLInputElement) => {
+  const scripts: NodeListOf<HTMLScriptElement> = document.querySelectorAll<HTMLScriptElement>("script[nonce]");
+  scripts.forEach((ele: HTMLScriptElement) => {
     if (ele.innerHTML.startsWith("\n_GM_setData")) {
       let script: string = ele.innerHTML;
       let obj: GmSetdata = JSON.parse(script.substring(script.indexOf("(") + 1, script.lastIndexOf(")")));
@@ -23,11 +23,11 @@ function getGmId(): string {
 
 async function getThreadId(): Promise<string> {
   // in mail, get thread id
-  let h2: NodeListOf<HTMLInputElement> = document.querySelectorAll<HTMLInputElement>("h2[data-thread-perm-id]");
+  let h2: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>("h2[data-thread-perm-id]");
   let threadid: string = "";
 
   if (h2.length) {
-    h2.forEach((ele: HTMLInputElement) => {
+    h2.forEach((ele: HTMLElement) => {
       threadid = ele.getAttribute("data-thread-perm-id")!;
     });
     return threadid;
@@ -42,10 +42,10 @@ function getThreadList(): EmailThread[] {
   // in box, get email list
   let threadList: EmailThread[] = [];
   if (document.querySelectorAll("table") !== null) {
-    let tbody: NodeListOf<HTMLInputElement> = document.querySelectorAll<HTMLInputElement>("tbody");
-    tbody.forEach((ele: HTMLInputElement) => {
-      let span: NodeListOf<HTMLInputElement> = ele.querySelectorAll<HTMLInputElement>("span");
-      span.forEach((ele2: HTMLInputElement) => {
+    let tbody: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>("tbody");
+    tbody.forEach((ele: HTMLElement) => {
+      let span: NodeListOf<HTMLSpanElement> = ele.querySelectorAll<HTMLSpanElement>("span");
+      span.forEach((ele2: HTMLSpanElement) => {
         if (ele2.hasAttribute("data-thread-id")) {
           let threadId: string = ele2.getAttribute("data-thread-id")!;
           let thraedEle: HTMLElement = ele2.parentElement!.parentElement!.parentElement!;
@@ -92,7 +92,7 @@ function inSrc() {
   let rawEmail: string = document.getElementById("raw_message_text")!.innerHTML;
   let parsed: EmailHeader = mailParser(rawEmail);
 
-  const table = document.querySelector<HTMLInputElement>(".top-area table tbody");
+  const table = document.querySelector<HTMLElement>(".top-area table tbody");
   if (!table) {
     console.warn("no table");
     return;
@@ -206,4 +206,24 @@ async function inbox() {
   }
 }
 
-export { inbox, inMail, inSrc };
+async function inNewMail() {
+  console.log("writing a new email.");
+  let emailBodyArea = document.querySelector("div[g_editable]");
+  if (!emailBodyArea) return;
+
+  emailBodyArea.addEventListener("focus", (e) => {
+    let destAddr: string | null = document.querySelectorAll("form[enctype] span[email]")[0].getAttribute("email");
+    if (!destAddr) return;
+    // fetch("http://linux-gw.cysec.cs.ritsumei.ac.jp:20025/api/v1/smtp?domain=google.com");
+    console.log("check dest domain security:", destAddr);
+    let domain: string = destAddr.substring(destAddr.indexOf("@") + 1);
+
+    fetch(`http://localhost:20025/api/v1/smtp?domain=${domain}`).then(res => {
+      return res.json()
+    }).then(j => {
+      console.log(j);
+    })
+  })
+}
+
+export { inbox, inMail, inSrc, inNewMail };
