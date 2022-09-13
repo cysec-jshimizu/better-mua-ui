@@ -109,9 +109,9 @@ function inSrc() {
 }
 
 function insertImg(dist: Element, stat: SecStatus) {
-  // !!authの結果
-  // let authImgEle = document.createElement("img");
-  let authImgEle = document.createElement("div");
+  // authの結果
+  let authImgEle = document.createElement("img");
+  let authImg: string;
   authImgEle.className = "auth-result";
 
   if (!dist.querySelector(".auth-result")) {
@@ -123,22 +123,22 @@ function insertImg(dist: Element, stat: SecStatus) {
     })
 
     if (authResult) {
-      authImgEle.style.color = "green";
-      authImgEle.innerHTML = "✓";
+      authImg = "img/verified.png";
       authImgEle.setAttribute("data-tooltip", `このメールには署名があります\n${authStr}`);
     } else if (Object.keys(stat.auth).length === 0) {
-      authImgEle.style.color = "red";
-      authImgEle.innerHTML = "×";
+      authImg = "img/notverified.png";
       authImgEle.setAttribute("data-tooltip", `このメールには署名がついていません`);
     } else {
-      authImgEle.style.color = "orange";
-      authImgEle.innerHTML = "×";
+      authImg = "img/notverified.png";
       authImgEle.setAttribute("data-tooltip", `このメールの検証は失敗しています\n${authStr}`);
     }
+    authImgEle.src = chrome.extension.getURL(authImg);
+    authImgEle.height = 18;
+    authImgEle.width = 18;
     dist.prepend(authImgEle);
   }
 
-  // !!暗号化の結果
+  // 暗号化の結果
   let encryptImgEle = document.createElement("img");
   let lockImg: string;
   encryptImgEle.className = "encrypt-result";
