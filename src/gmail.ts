@@ -116,21 +116,25 @@ function insertImg(dist: Element, stat: SecStatus) {
 
   if (!dist.querySelector(".auth-result")) {
     let authResult: boolean = Object.keys(stat.auth).length ? true : false;
-
-    for (let authType in stat.auth) {
-      authResult &&= stat.auth[authType].result === "pass";
-    }
+    let authStr: string = "";
+    Object.keys(stat.auth).map(key => {
+      authResult &&= stat.auth[key].result === "pass";
+      authStr += `${key}: ${stat.auth[key].result};\n`
+    })
 
     if (authResult) {
       authImgEle.style.color = "green";
       authImgEle.innerHTML = "✓";
-    } else {
+      authImgEle.setAttribute("data-tooltip", `このメールには署名があります\n${authStr}`);
+    } else if (Object.keys(stat.auth).length === 0) {
       authImgEle.style.color = "red";
       authImgEle.innerHTML = "×";
+      authImgEle.setAttribute("data-tooltip", `このメールには署名がついていません`);
+    } else {
+      authImgEle.style.color = "orange";
+      authImgEle.innerHTML = "×";
+      authImgEle.setAttribute("data-tooltip", `このメールの検証は失敗しています\n${authStr}`);
     }
-    authImgEle.addEventListener("mouseenter", () => {
-      console.log(stat.auth);
-    });
     dist.prepend(authImgEle);
   }
 
@@ -142,16 +146,15 @@ function insertImg(dist: Element, stat: SecStatus) {
   if (!dist.querySelector(".encrypt-result")) {
     if (stat.encrypt.bool) {
       lockImg = "img/lock.png";
+      encryptImgEle.setAttribute("data-tooltip", `このメールは次のアルゴリズムで暗号化されて届きました\n${stat.encrypt.description}`);
     } else {
       lockImg = "img/notlock.png";
+      encryptImgEle.setAttribute("data-tooltip", "このメールは暗号化されずに届きました");
     }
     // encryptImgEle.src = browser.extension.getURL(lockImg);
     encryptImgEle.src = chrome.extension.getURL(lockImg);
     encryptImgEle.height = 20;
     encryptImgEle.width = 20;
-    encryptImgEle.addEventListener("mouseenter", () => {
-      console.log(stat.encrypt.description);
-    });
     dist.prepend(encryptImgEle);
   }
 }
@@ -178,11 +181,16 @@ async function inbox() {
   let threadList: EmailThread[] = getThreadList();
   let gmId: string = getGmId();
   for (let thread of threadList) {
-    let mailUrl: string = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${thread.id.substring(
-      8
-    )}`;
+    // if already inserted, pass
+    if (thread.ele.querySelector(".encrypt-result")) {
+      continue
+    }
+
+    let mailUrl: string
+      = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${thread.id.substring(8)}`;
     getEmail(mailUrl)
       .then(async function (raw: string): Promise<EmailHeader> {
+        // if failed, fetch email again
         if (raw === "") {
           await sleep(2);
           let raw2: string = await getEmail(mailUrl);
@@ -204,24 +212,69 @@ async function inbox() {
       });
     await sleep(0.05);
   }
+
+  await sleep(10);
+  inbox();
 }
 
 async function inNewMail() {
-  console.log("writing a new email.");
   let emailBodyArea = document.querySelector("div[g_editable]");
   if (!emailBodyArea) return;
 
+  let defaultLock: HTMLSpanElement | null = document.querySelector("form[enctype]>div[tabindex] span[tabindex]");
+
+  if (defaultLock) {
+    defaultLock.style.display = "none";
+  }
+
   emailBodyArea.addEventListener("focus", (e) => {
-    let destAddr: string | null = document.querySelectorAll("form[enctype] span[email]")[0].getAttribute("email");
+    let defaultLock2: HTMLSpanElement | null = document.querySelector("form[enctype] span[aria-hidden]");
+
+    if (defaultLock2 && defaultLock) {
+      defaultLock.style.display = "none";
+      defaultLock2.style.display = "none";
+    }
+
+    let destAddr: string | null = document.querySelectorAll("form[enctype] span[email]")[0]?.getAttribute("email");
     if (!destAddr) return;
-    // fetch("http://linux-gw.cysec.cs.ritsumei.ac.jp:20025/api/v1/smtp?domain=google.com");
-    console.log("check dest domain security:", destAddr);
     let domain: string = destAddr.substring(destAddr.indexOf("@") + 1);
 
     fetch(`http://localhost:20025/api/v1/smtp?domain=${domain}`).then(res => {
       return res.json()
     }).then(j => {
       console.log(j);
+
+      // insertImg
+      let dist = document.querySelectorAll("form[enctype]>div[tabindex]")[0].children[1];
+      let encImgEle = document.createElement("img");
+      encImgEle.className = "will-encrypt";
+
+      let willEncrypt: boolean = false;
+      if (j.dane.status) {
+        willEncrypt = true;
+      } else if (j["mta-sts"].status) {
+        willEncrypt = true;
+      } else if (j.starttls.status) {
+        willEncrypt = true;
+      }
+
+      if (willEncrypt) {
+        encImgEle.src = chrome.extension.getURL("img/lock.png");
+        encImgEle.setAttribute("data-tooltip", "このメールは暗号化されて送信されます");
+      } else {
+        encImgEle.src = chrome.extension.getURL("img/notlock.png");
+        encImgEle.setAttribute("data-tooltip", "このメールは暗号化されせずに送信されます");
+      }
+      encImgEle.height = 20;
+      encImgEle.width = 20;
+
+      if (!dist?.querySelector(".will-encrypt")) {
+        dist.prepend(encImgEle);
+      } else if (dist?.querySelector(".will-encrypt")) {
+        dist.querySelector(".will-encrypt")?.replaceWith(encImgEle);
+      }
+    }).catch((e) => {
+      // failed to fetch
     })
   })
 }
