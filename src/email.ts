@@ -1,10 +1,20 @@
 function mailParser(email: string): EmailHeader {
-  let headerStr: string = email.substring(0, email.indexOf("\n\n"));
+  let headerStr: string;
+  // check body exsit
+  if (email.indexOf("\n\n") !== -1) {
+    headerStr = email.substring(0, email.indexOf("\n\n"));
+  } else {
+    headerStr = email;
+  }
+
   let headerList: EmailHeader = {};
   let revHeader: string[] = headerStr.split("\n").reverse();
+  if (headerStr.indexOf("\r") !== -1) {
+    revHeader = headerStr.split("\r\n").reverse();
+  }
 
   revHeader.forEach((line, index) => {
-    if (line[0] === " ") {
+    if (line[0] === " " || line[0] === "\t") {
       revHeader[index + 1] += line.trim();
     } else {
       let colon: number = line.indexOf(":");
@@ -49,15 +59,17 @@ function parseSecStat(auth: string, received: Array<string>): SecStatus {
 
   // parse received header
   const reReceived: RegExp = new RegExp(
-    /^from [\[\]\w\.-]+ \([\w\s\.\[\]\-]+\) ?by [\w\.]+ (?:\(\w+\) )?with ([a-zA-Z]+) [\w\s\.\-\&@;]+(\([\w\s\=\-\/]+\))?/,
+    /^from [\[\]\w\.-]+ ?\([\w\s\.:\[\]\-]+\) ?by [\w\.]+ ?(?:\([\w\.:]+\))? with ?([a-zA-Z]+) ?(?:[\w\s\.\-\&@;]+)? ?(\([\w\s\=\-\/,]+\))?/,
     "m"
   );
   for (let i of received) {
     let matchResults: Array<string> | null = i.match(reReceived);
     if (matchResults) {
-      if (!matchResults[1].match(/SMTPS/)) {
+
+      if (!matchResults[1].match(/SMTPS|Microsoft/)) {
         continue;
       }
+
       stat.encrypt.bool = true;
       stat.encrypt.description = matchResults[1];
       if (matchResults[2]) {
