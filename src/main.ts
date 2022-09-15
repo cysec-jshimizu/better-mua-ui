@@ -1,5 +1,6 @@
 import * as gmail from "./gmail";
 import * as outlook from "./outlook";
+import { sleep } from "./util";
 
 function mailGoogleCom(url: URL) {
   let params: URLSearchParams = url.searchParams;
@@ -19,7 +20,7 @@ function mailGoogleCom(url: URL) {
   }
 }
 
-function outlookOffice365Com(url: URL) {
+async function outlookOffice365Com(url: URL) {
   outlook.inbox();
   if (url.pathname.match(/^\/mail\/$/)) {
     console.log("inbox");
@@ -27,9 +28,12 @@ function outlookOffice365Com(url: URL) {
     console.log("open email");
   }
 
-  let newEmailButton = document.querySelectorAll("#app .ms-Button--commandBar")[1];
+  await sleep(2);
+  let newEmailButton = document.querySelectorAll("#app .ms-Button--commandBar")[0];
+  console.log(newEmailButton);
+
   newEmailButton?.addEventListener("click", () => {
-    console.log("writing a new email");
+    outlook.writeNewEmail();
   })
 }
 

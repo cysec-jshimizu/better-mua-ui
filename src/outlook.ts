@@ -87,7 +87,14 @@ async function getEmailList() {
 
 function inMail() { }
 
-function insertImg(dist: Element, stat: SecStatus) {
+function writeNewEmail() {
+  console.log("new Email");
+  console.log(document.querySelector("div[aria-label='宛先']")?.innerHTML)
+}
+
+function insertImg(dist: HTMLElement, stat: SecStatus) {
+  dist.style.backgroundColor = "white";
+  dist.style.borderTop = "gray 1px solid"
   // authの結果
   let authImgEle = document.createElement("img");
   let authImg: string;
@@ -146,7 +153,6 @@ async function inbox() {
   await sleep(2);
   let emails = await getEmailList();
   for (let email of emails) {
-    console.log(email.status);
     if (email.status === null) {
       continue;
     }
@@ -155,4 +161,4 @@ async function inbox() {
 }
 
 
-export { inbox }
+export { inbox, writeNewEmail }
