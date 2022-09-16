@@ -1,6 +1,6 @@
 import * as gmail from "./gmail";
-import * as outlook from "./outlook";
-import { sleep } from "./util";
+// import * as outlook from "./outlook";
+// import { sleep } from "./util";
 
 function mailGoogleCom(url: URL) {
   let params: URLSearchParams = url.searchParams;
@@ -20,22 +20,22 @@ function mailGoogleCom(url: URL) {
   }
 }
 
-async function outlookOffice365Com(url: URL) {
-  outlook.inbox();
-  if (url.pathname.match(/^\/mail\/$/)) {
-    console.log("inbox");
-  } else if (url.pathname.match(/^\/mail\/inbox\/id\/[\w\%]+/)) {
-    console.log("open email");
-  }
+// async function outlookOffice365Com(url: URL) {
+//   outlook.inbox();
+//   if (url.pathname.match(/^\/mail\/$/)) {
+//     console.log("inbox");
+//   } else if (url.pathname.match(/^\/mail\/inbox\/id\/[\w\%]+/)) {
+//     console.log("open email");
+//   }
 
-  await sleep(2);
-  let newEmailButton = document.querySelectorAll("#app .ms-Button--commandBar")[0];
-  console.log(newEmailButton);
+//   await sleep(2);
+//   let newEmailButton = document.querySelectorAll("#app .ms-Button--commandBar")[0];
+//   console.log(newEmailButton);
 
-  newEmailButton?.addEventListener("click", () => {
-    outlook.writeNewEmail();
-  })
-}
+//   newEmailButton?.addEventListener("click", () => {
+//     outlook.writeNewEmail();
+//   })
+// }
 
 function main() {
   let url: URL = new URL(document.URL);
@@ -47,9 +47,10 @@ function main() {
     });
 
     mailGoogleCom(url);
-  } else if (url.origin === "https://outlook.office.com") {
-    outlookOffice365Com(url);
   }
+  // else if (url.origin === "https://outlook.office.com") {
+  //   outlookOffice365Com(url);
+  // }
 }
 
 main();
