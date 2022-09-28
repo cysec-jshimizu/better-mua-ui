@@ -119,7 +119,16 @@ function insertImg(dist: Element, stat: SecStatus) {
     let authStr: string = "";
     Object.keys(stat.auth).map(key => {
       authResult &&= stat.auth[key].result === "pass";
-      authStr += `${key}: ${stat.auth[key].result};\n`
+      if (key === "dkim") {
+        // add dkim domain when mouse over on icons
+        let dkimDomain: String;
+        let startPos: number = stat.auth[key].description.indexOf("header.i=@") + "header.i=@".length;
+        let endPos: number = stat.auth[key].description.indexOf(" ", startPos);
+        dkimDomain = stat.auth[key].description.slice(startPos, endPos);
+        authStr += `${key}: ${stat.auth[key].result}, ${dkimDomain};\n`;
+      } else {
+        authStr += `${key}: ${stat.auth[key].result};\n`;
+      }
     })
 
     if (authResult) {
@@ -151,7 +160,6 @@ function insertImg(dist: Element, stat: SecStatus) {
       lockImg = "img/notlock.png";
       encryptImgEle.setAttribute("data-tooltip", "このメールは暗号化されずに届きました");
     }
-    // encryptImgEle.src = browser.extension.getURL(lockImg);
     encryptImgEle.src = chrome.extension.getURL(lockImg);
     encryptImgEle.height = 20;
     encryptImgEle.width = 20;
@@ -242,8 +250,6 @@ async function inNewMail() {
     fetch(`http://localhost:20025/api/v1/smtp?domain=${domain}`).then(res => {
       return res.json()
     }).then(j => {
-      console.log(j);
-
       // insertImg
       let dist = document.querySelectorAll("form[enctype]>div[tabindex]")[0].children[1];
       let encImgEle = document.createElement("img");
@@ -260,10 +266,10 @@ async function inNewMail() {
 
       if (willEncrypt) {
         encImgEle.src = chrome.extension.getURL("img/lock.png");
-        encImgEle.setAttribute("data-tooltip", "このメールは暗号化されて送信されます");
+        encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールは暗号化されて送信されます`);
       } else {
         encImgEle.src = chrome.extension.getURL("img/notlock.png");
-        encImgEle.setAttribute("data-tooltip", "このメールは暗号化されせずに送信されます");
+        encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールは暗号化されせずに送信されます`);
       }
       encImgEle.height = 20;
       encImgEle.width = 20;
