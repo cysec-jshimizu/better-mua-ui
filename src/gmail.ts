@@ -124,13 +124,13 @@ function insertImg(dist: Element, stat: SecStatus) {
 
     if (authResult) {
       authImg = "img/verified.png";
-      authImgEle.setAttribute("data-tooltip", `このメールには署名があります\n${authStr}`);
+      authImgEle.setAttribute("data-tooltip", `このメールの送信者ドメインは正しいです\n${authStr}`);
     } else if (Object.keys(stat.auth).length === 0) {
       authImg = "img/notverified.png";
-      authImgEle.setAttribute("data-tooltip", `このメールには署名がついていません`);
+      authImgEle.setAttribute("data-tooltip", `このメールには送信ドメイン認証がありません`);
     } else {
       authImg = "img/notverified.png";
-      authImgEle.setAttribute("data-tooltip", `このメールの検証は失敗しています\n${authStr}`);
+      authImgEle.setAttribute("data-tooltip", `このメールの送信者ドメインは誤っている可能性があります\n${authStr}`);
     }
     authImgEle.src = chrome.extension.getURL(authImg);
     authImgEle.height = 18;
