@@ -43,15 +43,14 @@ function getThreadList(): EmailThread[] {
   let threadList: EmailThread[] = [];
   if (document.querySelectorAll("table") !== null) {
     let tbody: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>("tbody");
-    tbody.forEach((ele: HTMLElement) => {
-      let span: NodeListOf<HTMLSpanElement> = ele.querySelectorAll<HTMLSpanElement>("span");
-      span.forEach((ele2: HTMLSpanElement) => {
-        if (ele2.hasAttribute("data-thread-id")) {
-          let threadId: string = ele2.getAttribute("data-thread-id")!;
-          let thraedEle: HTMLElement = ele2.parentElement!.parentElement!.parentElement!;
-          if (threadList.filter((temp: EmailThread) => temp.id === threadId).length === 0) {
-            threadList.push({ id: threadId, ele: thraedEle });
-          }
+    tbody.forEach((tbodyEle: HTMLElement) => {
+      let span: NodeListOf<HTMLSpanElement> = tbodyEle.querySelectorAll<HTMLSpanElement>("span[data-thread-id]");
+
+      span.forEach((spanEle: HTMLSpanElement) => {
+        let threadId: string = spanEle.getAttribute("data-thread-id")!;
+        let thraedEle: HTMLElement = spanEle.parentElement!.parentElement!.parentElement!;
+        if (threadList.filter((temp: EmailThread) => temp.id === threadId).length === 0) {
+          threadList.push({ id: threadId, ele: thraedEle });
         }
       });
     });
@@ -171,6 +170,8 @@ async function inMail() {
   let tId: string = await getThreadId();
   let gmId: string = getGmId();
   let u: string = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${tId.substring(7)}`;
+
+  // element of date and star in mail
   let ele: Element | null = document.querySelector("div.gK");
   if (!ele) {
     return;
@@ -191,7 +192,7 @@ async function inbox() {
   for (let thread of threadList) {
     // if already inserted, pass
     if (thread.ele.querySelector(".encrypt-result")) {
-      continue
+      continue;
     }
 
     let mailUrl: string
@@ -248,7 +249,7 @@ async function inNewMail() {
     let domain: string = destAddr.substring(destAddr.indexOf("@") + 1);
 
     fetch(`http://localhost:20025/api/v1/smtp?domain=${domain}`).then(res => {
-      return res.json()
+      return res.json();
     }).then(j => {
       // insertImg
       let dist = document.querySelectorAll("form[enctype]>div[tabindex]")[0].children[1];
