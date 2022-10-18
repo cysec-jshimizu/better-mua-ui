@@ -116,7 +116,7 @@ function insertImg(dist: Element, stat: SecStatus) {
   if (!dist.querySelector(".auth-result")) {
     let authResult: boolean = Object.keys(stat.auth).length ? true : false;
     let authStr: string = "";
-    Object.keys(stat.auth).map(key => {
+    Object.keys(stat.auth).map((key) => {
       authResult &&= stat.auth[key].result === "pass";
       if (key === "dkim") {
         // add dkim domain when mouse over on icons
@@ -128,7 +128,7 @@ function insertImg(dist: Element, stat: SecStatus) {
       } else {
         authStr += `${key}: ${stat.auth[key].result};\n`;
       }
-    })
+    });
 
     if (authResult) {
       authImg = "img/verified.png";
@@ -154,7 +154,10 @@ function insertImg(dist: Element, stat: SecStatus) {
   if (!dist.querySelector(".encrypt-result")) {
     if (stat.encrypt.bool) {
       lockImg = "img/lock.png";
-      encryptImgEle.setAttribute("data-tooltip", `このメールは次のアルゴリズムで暗号化されて届きました\n${stat.encrypt.description}`);
+      encryptImgEle.setAttribute(
+        "data-tooltip",
+        `このメールは次のアルゴリズムで暗号化されて届きました\n${stat.encrypt.description}`
+      );
     } else {
       lockImg = "img/notlock.png";
       encryptImgEle.setAttribute("data-tooltip", "このメールは暗号化されずに届きました");
@@ -195,8 +198,9 @@ async function inbox() {
       continue;
     }
 
-    let mailUrl: string
-      = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${thread.id.substring(8)}`;
+    let mailUrl: string = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${thread.id.substring(
+      8
+    )}`;
     getEmail(mailUrl)
       .then(async function (raw: string): Promise<EmailHeader> {
         // if failed, fetch email again
@@ -248,42 +252,45 @@ async function inNewMail() {
     if (!destAddr) return;
     let domain: string = destAddr.substring(destAddr.indexOf("@") + 1);
 
-    fetch(`http://localhost:20025/api/v1/smtp?domain=${domain}`).then(res => {
-      return res.json();
-    }).then(j => {
-      // insertImg
-      let dist = document.querySelectorAll("form[enctype]>div[tabindex]")[0].children[1];
-      let encImgEle = document.createElement("img");
-      encImgEle.className = "will-encrypt";
+    fetch(`http://localhost:20025/api/v1/smtp?domain=${domain}`)
+      .then((res) => {
+        return res.json();
+      })
+      .then((j) => {
+        // insertImg
+        let dist = document.querySelectorAll("form[enctype]>div[tabindex]")[0].children[1];
+        let encImgEle = document.createElement("img");
+        encImgEle.className = "will-encrypt";
 
-      let willEncrypt: boolean = false;
-      if (j.dane.status) {
-        willEncrypt = true;
-      } else if (j["mta-sts"].status) {
-        willEncrypt = true;
-      } else if (j.starttls.status) {
-        willEncrypt = true;
-      }
+        let willEncrypt: boolean = false;
+        if (j.dane.status) {
+          willEncrypt = true;
+        } else if (j["mta-sts"].status) {
+          willEncrypt = true;
+        } else if (j.starttls.status) {
+          willEncrypt = true;
+        }
 
-      if (willEncrypt) {
-        encImgEle.src = chrome.extension.getURL("img/lock.png");
-        encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールは暗号化されて送信されます`);
-      } else {
-        encImgEle.src = chrome.extension.getURL("img/notlock.png");
-        encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールは暗号化されせずに送信されます`);
-      }
-      encImgEle.height = 20;
-      encImgEle.width = 20;
+        if (willEncrypt) {
+          encImgEle.src = chrome.extension.getURL("img/lock.png");
+          encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールは暗号化されて送信されます`);
+        } else {
+          encImgEle.src = chrome.extension.getURL("img/notlock.png");
+          encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールは暗号化されせずに送信されます`);
+        }
+        encImgEle.height = 20;
+        encImgEle.width = 20;
 
-      if (!dist?.querySelector(".will-encrypt")) {
-        dist.prepend(encImgEle);
-      } else if (dist?.querySelector(".will-encrypt")) {
-        dist.querySelector(".will-encrypt")?.replaceWith(encImgEle);
-      }
-    }).catch((e) => {
-      // failed to fetch
-    })
-  })
+        if (!dist?.querySelector(".will-encrypt")) {
+          dist.prepend(encImgEle);
+        } else if (dist?.querySelector(".will-encrypt")) {
+          dist.querySelector(".will-encrypt")?.replaceWith(encImgEle);
+        }
+      })
+      .catch((e) => {
+        // failed to fetch
+      });
+  });
 }
 
 export { inbox, inMail, inSrc, inNewMail };

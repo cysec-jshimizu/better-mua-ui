@@ -65,7 +65,6 @@ function parseSecStat(auth: string, received: Array<string>): SecStatus {
   for (let i of received) {
     let matchResults: Array<string> | null = i.match(reReceived);
     if (matchResults) {
-
       if (!matchResults[1].match(/SMTPS|Microsoft/)) {
         continue;
       }
