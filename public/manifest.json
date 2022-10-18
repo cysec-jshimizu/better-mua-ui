@@ -15,5 +15,8 @@
       "run_at": "document_end"
     }
   ],
-  "web_accessible_resources": ["img/*"]
+  "web_accessible_resources": ["img/*"],
+  "permissions": [
+    "http://localhost/*"
+  ]
 }
