@@ -5,10 +5,10 @@ import * as gmail from "./gmail";
 function mailGoogleCom(url: URL) {
   let params: URLSearchParams = url.searchParams;
 
-  if (url.hash.match(/#inbox(\/p2)?$/)) {
+  if (url.hash.match(/#inbox(?:\/p[\d]+)?$/)) {
     // メール一覧
     gmail.inbox();
-  } else if (url.hash.match(/#inbox(?:\/p2)?\?compose=new/)) {
+  } else if (url.hash.match(/#inbox(?:\/p[\d]+)?\?compose=new/)) {
     // 新規メールを書く
     gmail.inNewMail();
   } else if (url.hash.match(/#inbox\/[\w]+/)) {
