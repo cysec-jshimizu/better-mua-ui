@@ -59,7 +59,7 @@ function parseSecStat(auth: string, received: Array<string>): SecStatus {
 
   // parse received header
   const reReceived: RegExp = new RegExp(
-    /^from [\[\]\w\.-]+ ?\([\w\s\.:\[\]\-]+\) ?by [\w\.]+ ?(?:\([\w\.:]+\))? with ?([a-zA-Z]+) ?(?:[\w\s\.\-\&@;]+)? ?(\([\w\s\=\-\/,]+\))?/,
+    /^from [\[\]\w\.-]+ ?\([\w\s\.:\[\]\-]+\) ?by [\w\.]+ ?(?:\([\w\.:]+\))? with ?([a-zA-Z0-9]+) ?(?:[\w\s\.\-\&@;]+)? ?(\([\w\s\=\-\/,]+\))?/,
     "m"
   );
   for (let i of received) {
