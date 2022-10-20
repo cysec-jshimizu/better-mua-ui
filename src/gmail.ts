@@ -189,7 +189,11 @@ async function inMail() {
 }
 
 async function inbox() {
-  await sleep(2);
+  if (!new URL(document.URL).hash.match(/#inbox(?:\/p[\d]+)?$/)) {
+    return;
+  }
+  await sleep(1);
+
   let threadList: EmailThread[] = getThreadList();
   let gmId: string = getGmId();
   for (let thread of threadList) {
@@ -226,7 +230,7 @@ async function inbox() {
     await sleep(0.05);
   }
 
-  await sleep(10);
+  await sleep(5);
   inbox();
 }
 
