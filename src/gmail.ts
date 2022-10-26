@@ -188,7 +188,11 @@ async function inMail() {
   }
 }
 
-async function inbox() {
+async function inbox(recursiveLimit: number) {
+  if (recursiveLimit > 5) {
+    return
+  }
+
   if (!new URL(document.URL).hash.match(/#inbox(?:\/p[\d]+)?$/)) {
     return;
   }
@@ -207,6 +211,7 @@ async function inbox() {
     )}`;
     getEmail(mailUrl)
       .then(async function (raw: string): Promise<EmailHeader> {
+        thread.ele.style.backgroundColor = "";
         // if failed, fetch email again
         if (raw === "") {
           await sleep(2);
@@ -231,7 +236,7 @@ async function inbox() {
   }
 
   await sleep(5);
-  inbox();
+  inbox(recursiveLimit + 1);
 }
 
 async function inNewMail() {
@@ -277,7 +282,7 @@ async function inNewMail() {
 
         if (willEncrypt) {
           encImgEle.src = chrome.extension.getURL("img/lock.png");
-          encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールは暗号化されて送信されます`);
+          encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールはSTARTTLSで暗号化されて送信されます`);
         } else {
           encImgEle.src = chrome.extension.getURL("img/notlock.png");
           encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールは暗号化されせずに送信されます`);

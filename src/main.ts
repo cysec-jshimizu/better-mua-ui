@@ -7,7 +7,7 @@ function mailGoogleCom(url: URL) {
 
   if (url.hash.match(/#inbox(?:\/p[\d]+)?$/)) {
     // メール一覧
-    gmail.inbox();
+    gmail.inbox(0);
   } else if (url.hash.match(/#inbox(?:\/p[\d]+)?\?compose=new/)) {
     // 新規メールを書く
     gmail.inNewMail();
