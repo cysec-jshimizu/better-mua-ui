@@ -189,7 +189,7 @@ async function inMail() {
 }
 
 async function inbox(recursiveLimit: number) {
-  if (recursiveLimit > 5) {
+  if (recursiveLimit > 50) {
     return
   }
 
@@ -261,7 +261,7 @@ async function inNewMail() {
     if (!destAddr) return;
     let domain: string = destAddr.substring(destAddr.indexOf("@") + 1);
 
-    fetch(`http://localhost:20025/api/v1/smtp?domain=${domain}`)
+    fetch(`https://cysec.jshimizu.dev/api/v1/smtp?domain=${domain}`)
       .then((res) => {
         return res.json();
       })
