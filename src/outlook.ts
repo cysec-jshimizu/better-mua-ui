@@ -121,7 +121,7 @@ function insertImg(dist: HTMLElement, stat: SecStatus) {
       authImg = "img/notverified.png";
       authImgEle.setAttribute("title", `このメールの検証は失敗しています\n${authStr}`);
     }
-    authImgEle.src = chrome.extension.getURL(authImg);
+    authImgEle.src = chrome.runtime.getURL(authImg);
     authImgEle.height = 18;
     authImgEle.width = 18;
     dist.prepend(authImgEle);
@@ -144,7 +144,7 @@ function insertImg(dist: HTMLElement, stat: SecStatus) {
       encryptImgEle.setAttribute("title", "このメールは暗号化されずに届きました");
     }
     // encryptImgEle.src = browser.extension.getURL(lockImg);
-    encryptImgEle.src = chrome.extension.getURL(lockImg);
+    encryptImgEle.src = chrome.runtime.getURL(lockImg);
     encryptImgEle.height = 20;
     encryptImgEle.width = 20;
     dist.prepend(encryptImgEle);
