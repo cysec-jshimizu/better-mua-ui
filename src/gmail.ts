@@ -48,9 +48,9 @@ function getThreadList(): EmailThread[] {
 
       span.forEach((spanEle: HTMLSpanElement) => {
         let threadId: string = spanEle.getAttribute("data-thread-id")!;
-        let thraedEle: HTMLElement = spanEle.parentElement!.parentElement!.parentElement!;
+        let threadEle: HTMLElement = spanEle.parentElement!.parentElement!.parentElement!;
         if (threadList.filter((temp: EmailThread) => temp.id === threadId).length === 0) {
-          threadList.push({ id: threadId, ele: thraedEle });
+          if (threadEle.offsetHeight !== 0) threadList.push({ id: threadId, ele: threadEle });
         }
       });
     });
@@ -174,6 +174,7 @@ async function inMail() {
   let gmId: string = getGmId();
   let u: string = `https://mail.google.com/mail/u/0/?ik=${gmId}&view=om&permmsgid=msg-${tId.substring(7)}`;
 
+  await sleep(1);
   // element of date and star in mail
   let ele: Element | null = document.querySelector("div.gK");
   if (!ele) {
@@ -245,7 +246,12 @@ async function inNewMail() {
 
   emailBodyArea.addEventListener("focus", (e) => {
     let destAddr: string | null = document.querySelectorAll("form[enctype] span[email]")[0]?.getAttribute("email");
-    if (!destAddr) return;
+
+    if (!destAddr) {
+      destAddr = document.querySelectorAll("form[enctype] div[data-hovercard-id]")[0]?.getAttribute("data-hovercard-id");
+
+      if (!destAddr) return;
+    }
     let domain: string = destAddr.substring(destAddr.indexOf("@") + 1);
 
     fetch(`https://cysec.jshimizu.dev/api/v1/smtp?domain=${domain}`)
