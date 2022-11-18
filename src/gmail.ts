@@ -132,13 +132,13 @@ function insertImg(dist: Element, stat: SecStatus) {
 
     if (authResult) {
       authImg = "img/verified.png";
-      authImgEle.setAttribute("data-tooltip", `このメールの送信者ドメインは正しいです\n${authStr}`);
+      authImgEle.setAttribute("data-tooltip", `このメールの送信者は詐称されていない可能性が高いです\n${authStr}`);
     } else if (Object.keys(stat.auth).length === 0) {
       authImg = "img/notverified.png";
       authImgEle.setAttribute("data-tooltip", `このメールには送信ドメイン認証がありません`);
     } else {
       authImg = "img/notverified.png";
-      authImgEle.setAttribute("data-tooltip", `このメールの送信者ドメインは誤っている可能性があります\n${authStr}`);
+      authImgEle.setAttribute("data-tooltip", `このメールの送信者は詐称されている可能性があります\n${authStr}`);
     }
     authImgEle.src = chrome.runtime.getURL(authImg);
     authImgEle.height = 18;
@@ -156,11 +156,11 @@ function insertImg(dist: Element, stat: SecStatus) {
       lockImg = "img/lock.png";
       encryptImgEle.setAttribute(
         "data-tooltip",
-        `このメールは次のアルゴリズムで暗号化されて届きました\n${stat.encrypt.description}`
+        `このメールは次のアルゴリズムのSTARTTLSで暗号化されて届きました\n${stat.encrypt.description}`
       );
     } else {
       lockImg = "img/notlock.png";
-      encryptImgEle.setAttribute("data-tooltip", "このメールは暗号化されずに届きました");
+      encryptImgEle.setAttribute("data-tooltip", "このメールはSTARTTLSで暗号化されずに届きました");
     }
     encryptImgEle.src = chrome.runtime.getURL(lockImg);
     encryptImgEle.height = 20;
@@ -272,7 +272,7 @@ async function inNewMail() {
           encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールはSTARTTLSで暗号化されて送信されます`);
         } else {
           encImgEle.src = chrome.runtime.getURL("img/notlock.png");
-          encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールは暗号化されせずに送信されます`);
+          encImgEle.setAttribute("data-tooltip", `${domain}宛てのメールはSTARTTLSで暗号化されせずに送信されます`);
         }
         encImgEle.height = 20;
         encImgEle.width = 20;
