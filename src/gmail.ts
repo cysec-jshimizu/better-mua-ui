@@ -190,7 +190,7 @@ async function inMail() {
 
 async function inbox(recursiveLimit: number) {
   if (recursiveLimit > 50) {
-    return
+    return;
   }
 
   if (!new URL(document.URL).hash.match(/#inbox(?:\/p[\d]+)?$/)) {
@@ -243,20 +243,7 @@ async function inNewMail() {
   let emailBodyArea = document.querySelector("div[g_editable]");
   if (!emailBodyArea) return;
 
-  let defaultLock: HTMLSpanElement | null = document.querySelector("form[enctype]>div[tabindex] span[tabindex]");
-
-  if (defaultLock) {
-    defaultLock.style.display = "none";
-  }
-
   emailBodyArea.addEventListener("focus", (e) => {
-    let defaultLock2: HTMLSpanElement | null = document.querySelector("form[enctype] span[aria-hidden]");
-
-    if (defaultLock2 && defaultLock) {
-      defaultLock.style.display = "none";
-      defaultLock2.style.display = "none";
-    }
-
     let destAddr: string | null = document.querySelectorAll("form[enctype] span[email]")[0]?.getAttribute("email");
     if (!destAddr) return;
     let domain: string = destAddr.substring(destAddr.indexOf("@") + 1);

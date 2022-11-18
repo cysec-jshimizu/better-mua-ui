@@ -1,0 +1,7 @@
+.HE>div>div>div:nth-child(4)>div:first-child {
+    display: none;
+}
+
+form[enctype] span[tabindex][role="button"] {
+    display: none;
+}
