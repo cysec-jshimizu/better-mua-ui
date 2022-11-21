@@ -244,7 +244,8 @@ async function inNewMail() {
   let emailBodyArea = document.querySelector("div[g_editable]");
   if (!emailBodyArea) return;
 
-  emailBodyArea.addEventListener("focus", (e) => {
+  emailBodyArea.addEventListener("focus", async (e) => {
+    await sleep(0.1);
     let destAddr: string | null = document.querySelectorAll("form[enctype] span[email]")[0]?.getAttribute("email");
 
     if (!destAddr) {
