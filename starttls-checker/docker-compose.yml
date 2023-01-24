@@ -1,0 +1,50 @@
+version: '3'
+services:
+  db:
+    image: mariadb:10.10.2
+    environment:
+      - MYSQL_ROOT_HOST=${DB_ROOT_HOST}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
+      - MYSQL_ROOT_PASSWORD=${DB_PASS}
+
+    # command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - '23306:3306'
+
+    volumes:
+      - ./sql/data:/var/lib/mysql
+      #使用するネットワーク
+    networks:
+      - starttls-chekcer
+
+  node:
+    image: node:18.13.0
+    environment:
+      - MYSQL_SERVER=db
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
+      - MYSQL_DATABASE=${DB_NAME}
+      - CHOKIDAR_USEPOLLING=true
+
+    tty: true
+    restart: always
+    ports:
+      - '20025:20025'
+
+    volumes:
+      - ./src:/src
+    working_dir: /src
+
+    command: >
+      /bin/bash -c "npm i && node index.js"
+
+    networks:
+      - starttls-chekcer
+
+    depends_on:
+      - db
+
+networks:
+  starttls-chekcer:
